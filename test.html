@@ -1,0 +1,74 @@
+<input type="range" min="50" max="180" step="0.01" onchange="changeTo(this.value)" style="width: 100%" value=0>
+<canvas id="c" width='1280' height='720'></canvas>
+
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('get', 'feature_curosr.txt', false); //yeah i know typo, whatevs
+xhr.send(null);
+
+
+var positions = xhr.responseText.trim().split('\n').map(function(e){
+	var parts = e.match(/([0-9]+) \(([0-9]+), ([0-9]+)\) \[(.*)\]/);
+	
+	var frame_num = +parts[1], 
+		x_pos = +parts[2], 
+		y_pos = +parts[3], 
+		pairs = parts[4].slice(1, -1).split('), (').map(function(f){
+			if(!f) return null;
+			var pair = f.split(', ');
+			var x = +pair[0], y = +pair[1];
+			return [x, y]
+		}).filter(function(f){
+			return f !== null
+		})
+	return [frame_num, [x_pos + 6, y_pos + 1], pairs]
+});
+
+var c = document.getElementById('c').getContext('2d');
+
+function getBezier(t, c1, c2, c3){
+	return [
+		(1-t) * (1-t) * c1[0] + 2 * (1 - t) * t * c2[0] + t * t * c3[0],
+		(1-t) * (1-t) * c1[1] + 2 * (1 - t) * t * c2[1] + t * t * c3[1]
+	]
+}
+
+function quadSpline(t, a, b){
+	// console.log(t, a, b)
+	var c = (a[0] + b[0]) / 2,
+		d = (a[1] + b[1]) / 2;
+	return getBezier(t, a, [c, d], b)
+}
+
+
+function drawPoint(point){
+	c.fillStyle = 'black'
+	c.fillRect(point[0] - 1, point[1] - 1, 2, 2)
+}
+
+function drawPoint1(point){
+	c.fillStyle = 'red'
+	c.fillRect(point[0] - 1, point[1] - 1, 2, 2)
+}
+
+
+for(var i = 0; i < 150; i+= 0.2){
+	var base = Math.floor(i);
+	var start = positions[base],
+		end = positions[base + 1];
+	drawPoint(quadSpline(i % 1, start[1], end[1]))
+	
+}
+
+for(var i = 0; i < 150; i++){
+	var sample = positions[i];
+	// console.log(sample)
+	var cursor = sample[1]
+	drawPoint(cursor)
+	var prior = sample[2]
+	prior.forEach(function(e){
+		drawPoint1(e)
+	})
+}
+
+</script>

@@ -1,4 +1,6 @@
 from SimpleCV import *
+import numpy as np
+
 pattern_image = Image("cursor.png")
 mask_image = Image("mask.png").grayscale()
 cam = VirtualCamera("output.avi", 'video')
@@ -87,8 +89,11 @@ for i in range(10, 10473):
 	# found_patterns = last_frame.findTemplate(pattern_image, 200)
 	# print found_patterns
 	# print "--"
+	# print sub.getNumpy()
+	# np.dstack(np.where(sub.getNumpy()[:,:,0] == 0))
+	on_pix = np.transpose(np.where(sub.getNumpy()[:,:,0] == 0))
+	print i, (x, y), [(corner.x, corner.y) for corner in corners], [(c[0], c[1]) for c in on_pix]
 
-	print i, (x, y), [(corner.x, corner.y) for corner in corners]
 	# (img.grayscale() - last_frame.grayscale()).show()
 
 

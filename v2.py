@@ -102,3 +102,4 @@ for i in range(10, 10473):
 	# found_patterns.draw()
 	# img.show()
 
+	
